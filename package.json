@@ -1,0 +1,25 @@
+{
+	"name": "webfiller",
+	"description": "Package placeholder for a node.js module to be published August, 2012 by Harald Rudell",
+	"author": "Harald Rudell <harald@allgoodapps.com> (http://www.haraldrudell.com)",
+	"keywords": ["template", "engine", "express", "html", "html5", "json", "client"],
+	"homepage": "https://github.com/haraldrudell/webfiller",
+	"bugs": "https://github.com/haraldrudell/webfiller/issues",
+	"version": "0.0.1",
+	"contributors": [
+		"Harald Rudell <harald@allgoodapps.com> (http://www.haraldrudell.com)"
+	],
+	"dependencies": {
+	},
+	"devDependencies": {
+		"nodeunit": ""
+	},
+	"repository" : {
+		"type" : "git",
+		"url" : "https://haraldrudell@github.com/haraldrudell/webfiller.git"
+	},
+	"main": "lib/webfiller",
+	"scripts": {
+		"test": "nodeunit test"
+	}
+}
