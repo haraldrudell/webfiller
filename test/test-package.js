@@ -6,64 +6,141 @@
 var fs = require('fs')
 // http://nodejs.org/api/path.html
 var path = require('path')
+// https://github.com/mishoo/UglifyJS/
+var uglify = require('uglify-js')
+
+if (!fs.exists) fs.exists = path.exists
 
 module.exports = {
-	testJsSyntax: testJsSyntax,
-	parsePackageJson: parsePackageJson,
+	syntaxTest: syntaxTest,
 	parseGitignore: parseGitignore,
+	findReadme: findReadme,
 }
 
+// this script should be put one level down from the deployment folder
 var deployFolder = path.join(__dirname, '..')
-alwaysIgnore = 'node_modules'
 
-// verify syntax of all JavaSCript
-function testJsSyntax(test) {
+// these defaults can be overriden by a file ./test-package.json
+var defaults = {
+	// list of paths, relative to the deployFolder that will not be searched
+	// you could have 'app.js', or 'public'
+	ignore: [
+		'test',
+		'node_modules',
+	],
+	extensions: {
+		'js': 'javascript',
+		'json': 'json',
+	}
+}
 
+var fileTypeMap = {
+	'javascript': verifyJavaScriptSyntax,
+	'json': verifyJsonSyntax,
+}
+
+// verify syntax of all JavaScript
+function syntaxTest(test) {
+	var cbCounter = 0
+
+	// get possible custom settings from file
 	var defaults = getDefaults()
 
-	// to verify JavaSCript syntax, recursively require all .js files
+	// look for syntax errors in all .js files
+	var counts = {}
+	var t = new Date
 	scanFolder(deployFolder)
 
-	test.done()
+	function end(err) {
+
+		if (err) throw err
+		if (--cbCounter == 0) {
+			// print file counts
+			var s = []
+			Object.keys(counts).forEach(function (countKey) {
+				s.push(countKey + ':' + counts[countKey])
+			})
+			console.log('Files checked for syntax:', s.join(', '), 'in', (((new Date) - t) / 1e3).toFixed(1),'s')
+
+			test.done()
+		}
+	}
 
 	function scanFolder(folder) {
 		//console.log(arguments.callee.name, folder)
-		fs.readdirSync(folder).forEach(function (jsFile) {
-			if (jsFile.substring(0, 1) != '.') {
+		cbCounter++
+		fs.readdir(folder, function (err, entries) {
+			if (!err) {
+				entries.forEach(function (entry) {
 
-				var absolutePath = path.join(folder, jsFile)
-				var relativePath = absolutePath.substring(deployFolder.length + 1)
+					// ignore hidden file (start with '.')
+					if (entry.substring(0, 1) != '.') {
+						var absolutePath = path.join(folder, entry)
+						var relativePath = absolutePath.substring(deployFolder.length + 1)
 
-				// check against ignore list
-				if (defaults.ignore.indexOf(relativePath) == -1) {
-					if (getType(absolutePath) === false) {
+						// check against ignore list
+						if (defaults.ignore.indexOf(relativePath) == -1) {
+							if (getType(absolutePath) === false) {
 
-						// recursively scan folders
-						scanFolder(absolutePath)
-					} else if (jsFile.indexOf('.' + defaults.extension) != -1) {
+								// recursively scan folders
+								scanFolder(absolutePath)
+							} else {
+								var entryExtension = path.extname(entry).substring(1)
+								var fileTypeKey = defaults.extensions[entryExtension]
+								if (fileTypeKey) {
+									counts[fileTypeKey] = (counts[fileTypeKey] || 0) + 1
+									var parseFunc = fileTypeMap[fileTypeKey]
+									if (parseFunc) {
 
-						// require all files matching defaults.extension
-						// if there is a syntax error, an exception will happen here
-						var jsModule = require(absolutePath)
-						// { mailconstructor: [Function: constructor] }
-						// console.log(jsModule)
-						test.ok(!!jsModule)
+										// check syntax of json and JavaScript files
+										cbCounter++
+										parseFunc(absolutePath, relativePath, end)
+									}
+								}
+							}
+						}
 					}
-				}
+				})
 			}
+			end(err)
 		})
 	}
-
 }
 
-// ensure that package.json can be parsed
-function parsePackageJson(test) {
+function verifyJavaScriptSyntax(file, relPath, cb) {
+	fs.readFile(file, 'utf-8', function (err, javascript) {
+		if (!err) {
+			var jsp = uglify.parser
+			var ast
+			try {
+				ast = jsp.parse(javascript)
+			} catch (e) {
+				console.log('File:', relPath ? relPath : file)
+				console.log('Syntax issue: %s at line:%s column:%s position:%s',
+					e.message,
+					e.line,
+					e.col,
+					e.pos)
+				throw e
+			}
+		}
+		cb(err)
+	})
+}
 
-	var data = fs.readFileSync(path.join(deployFolder, 'package.json'), 'utf-8')
-	var obj = JSON.parse(data)
-	test.ok(!!obj)
-
-	test.done()
+function verifyJsonSyntax(file, relPath, cb) {
+	fs.readFile(file, 'utf-8', function (err, jsonString) {
+		if (!err) {
+			var object
+			try {
+				object = JSON.parse(jsonString)
+			} catch (e) {
+				console.log('File:', relPath ? relPath : file)
+				err = e
+			}
+		}
+		cb(err)
+	})	
 }
 
 // ensure that .gitignore contains '/node_modules'
@@ -76,15 +153,18 @@ function parseGitignore(test) {
 	test.done()
 }
 
+// ensure that readme.md exists
+function findReadme(test) {
+
+	test.ok(fs.existsSync(path.join(deployFolder, 'readme.md')))
+
+	test.done()
+}
+
 // support stuff
 
 // get configuration, optionally from './test-pagage.json'
 function getDefaults() {
-
-	var defaults = {
-		ignore: [],
-		extension: 'js',
-	}
 
 	// read the ignore file
 	var testPackageJsonName = path.join(__dirname, path.basename(__filename, path.extname(__filename)) + '.json')
@@ -98,21 +178,20 @@ function getDefaults() {
 			throw e
 		}
 		if (!object) throw Error(msg)
+
+		// apply settings from file
 		if (object.ignore) {
 			if (!Array.isArray(object.ignore)) Error(testPackageJsonName + ' ignore must be array')
 			defaults.ignore = object.ignore
 		}
-		if (object.extension) {
-			if (typeof object.extension != 'string') Error(testPackageJsonName + ' extension must be string')
+		if (object.extensions) {
+			if (typeof object.extensions != 'object') Error(testPackageJsonName + ' extension must be object')
 			defaults.extension = object.extension
 		}
 	}
 
-	defaults.ignore.push(alwaysIgnore)
-
 	return defaults
 }
-
 
 // determine what path1 is
 // return value:

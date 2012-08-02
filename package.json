@@ -10,9 +10,11 @@
 		"Harald Rudell <harald@allgoodapps.com> (http://www.haraldrudell.com)"
 	],
 	"dependencies": {
+		"tagfinder": ""
 	},
 	"devDependencies": {
-		"nodeunit": ""
+		"nodeunit": "",
+		"uglify-js": ""
 	},
 	"repository" : {
 		"type" : "git",
