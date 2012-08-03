@@ -6,7 +6,6 @@ var compiler = require('../lib/compiler')
 
 module.exports = {
 	testCompiler: testCompiler,
-	testNonStringBindingsKey: testNonStringBindingsKey,
 }
 
 function testCompiler(test) {
@@ -37,24 +36,6 @@ function testCompiler(test) {
 	var expected = '<div>5'
 	var actual = renderFunction(data)
 	test.equal(actual, expected)
-
-	test.done()
-}
-
-function testNonStringBindingsKey(test) {
-	var html = '<div>'
-	var bindings = {
-		5: 'title'
-	}
-	for (var key in bindings) {
-		if (typeof key != 'string') {
-			console.log('1', typeof key)
-		}
-	}
-
-	var actual = compiler.compileHtml5(html, bindings)
-	console.log(actual)
-	test.ok(actual instanceof Error)
 
 	test.done()
 }

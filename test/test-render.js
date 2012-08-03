@@ -29,10 +29,12 @@ function testEmptyStringLocation(test) {
 		'': 'title',
 	}
 	var record = { title: 'Harald' }
+	var expected = 'title<!doctype html><title/>'
 	var viewExecutable = compiler.compileHtml5(html, bindings)
-	console.log(viewExecutable.getSource())
+	console.log('viewExecutable', viewExecutable.getSource())
 	var actual = viewExecutable({})
 	console.log(actual)
+	test.equal(actual, expected)
 
 	test.done()
 }
