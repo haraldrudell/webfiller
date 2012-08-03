@@ -1,7 +1,7 @@
 // packagetest.js
 // test javascript and json syntax
 // (c) Harald Rudell 2012
-// 2012-08-02
+// 2012-08-02b
 
 // http://nodejs.org/docs/latest/api/fs.html
 var fs = require('fs')
@@ -16,11 +16,12 @@ module.exports = {
 	syntaxTest: syntaxTest,
 	parseGitignore: parseGitignore,
 	findReadme: findReadme,
+	verifyPackageJson: verifyPackageJson,
 }
 
 // this script should be put one level down from the deployment folder
 var deployFolder = path.join(__dirname, '..')
-
+packageJsonKeys = ['name', 'description', 'author', 'version', 'contributors', 'repository', 'devDependencies', 'dependencies', 'repository', 'main', 'scripts']
 // these defaults can be overriden by a file ./test-package.json
 var defaults = {
 	// list of paths, relative to the deployFolder that will not be searched
@@ -142,6 +143,22 @@ function verifyJsonSyntax(file, relPath, cb) {
 		}
 		cb(err)
 	})	
+}
+
+function verifyPackageJson(test) {
+	var jsonString = fs.readFileSync(path.join(deployFolder, 'package.json'), 'utf-8')
+	var object
+	try {
+		object = JSON.parse(jsonString)
+	} catch (e) {
+		test.fail(e)
+	}
+	test.ok(!!object)
+	packageJsonKeys.forEach(function (key) {
+		test.ok(object[key] != undefined)
+	})
+
+	test.done()
 }
 
 // ensure that .gitignore contains '/node_modules'
