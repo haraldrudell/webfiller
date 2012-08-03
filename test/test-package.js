@@ -1,6 +1,7 @@
 // packagetest.js
 // test javascript and json syntax
 // (c) Harald Rudell 2012
+// 2012-08-02
 
 // http://nodejs.org/docs/latest/api/fs.html
 var fs = require('fs')
