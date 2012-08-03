@@ -19,8 +19,8 @@ append-all fields
 html escaping
 view include
 array binding value
-error
-emty string location
+error: 120802: no way to get an error...
+emty string location: testEmptyStringLocation
 */
 
 function testEmptyStringLocation(test) {
@@ -28,7 +28,7 @@ function testEmptyStringLocation(test) {
 	var bindings = {
 		'': 'title',
 	}
-	var record = { title: 'Harald' }
+	var record = { title: 'HERE' }
 	var viewExecutable = compiler.compileHtml5(html, bindings)
 	console.log(viewExecutable.getSource())
 	var actual = viewExecutable({})
@@ -37,7 +37,7 @@ function testEmptyStringLocation(test) {
 	test.done()
 }
 
-function testRender(test) {
+function testAppend(test) {
 	var options = {
 		title: 'aTitle',
 		data: {
