@@ -7,20 +7,40 @@ var render = require('../lib/renderengine')
 
 module.exports = {
 	testEmptyStringLocation: testEmptyStringLocation,
+	testReplace: testReplace,
+	testInsert: testInsert,
+	testAppend: testAppend,
+	testTag: testTag,
+	testInclude: testInclude,
+	testError: testError,
 }
 
 /*
 Need to test:
-top level data field
-data data field
-append
-insert
-append-all fields
-html escaping
-view include
-array binding value
-error: 120802: no way to get an error...
-emty string location: testEmptyStringLocation
+
+type: bindings key
+- empty string acesss: testEmptyStringLocation
+- #id: testInsert
+- .class: testAppend
+- tag: testTag
+
+type: bindings value string
+- top level data field: testEmptyStringLocation, testReplace
+- (data data field don't know how to implement this yes)
+- -view include: TestInclude
+
+type: bindings data object
+- append: testAppend
+- insert: testInsert
+- append-all fields: testTag
+
+type: bindings data array
+- array binding value
+
+type: other functions
+- html escaping: testReplace
+- raw escaping: TestInclude
+- error: 120802: no way to get an error...
 */
 
 function testEmptyStringLocation(test) {
@@ -31,26 +51,143 @@ function testEmptyStringLocation(test) {
 	var record = { title: 'HERE' }
 	var expected = 'HERE<!doctype html><title/>'
 	var viewExecutable = compiler.compileHtml5(html, bindings)
-	console.log('viewExecutable', viewExecutable.getSource())
-	var actual = viewExecutable({})
-	console.log(actual)
+	//console.log(viewExecutable.getSource('name'))
+	var actual = viewExecutable(record)
+	test.equal(actual, expected)
+
+	test.done()
+}
+
+function testReplace(test) {
+	var html = 'a<title>b</title>c'
+	var bindings = {
+		'title': 'here' // tags title, replace initial content with field here
+	}
+	var record = {
+		here: 'HERE<&',
+	}
+	var expected = 'a<title>HERE&lt;&amp;</title>c'
+	var viewExecutable = compiler.compileHtml5(html, bindings)
+	var actual = viewExecutable(record)
+	test.equal(actual, expected)
+
+	test.done()
+}
+
+
+function testInsert(test) {
+	var html = 'a<title>b</title>c<div id=x>d'
+	var bindings = {
+		'#x': {
+			'insert': 'here'
+		}
+	}
+	var record = {
+		here: 'HERE',
+	}
+	var expected = 'a<title>b</title>c<div id=x>HEREd'
+	var viewExecutable = compiler.compileHtml5(html, bindings)
+	var actual = viewExecutable(record)
 	test.equal(actual, expected)
 
 	test.done()
 }
 
 function testAppend(test) {
-	var options = {
-		title: 'aTitle',
-		data: {
-			name: 'Harald',
-		},
+	var html = 'a<div class=x>b</div>'
+	var bindings = {
+		'.x': { // find class x
+			'append': 'here' // append to tags its initial content
+		}
 	}
-	var viewExecutable = {
-
+	var record = {
+		here: 'HERE', // the value for field 'here' is 'HERE'
 	}
-	//var actual = render.render(data, viewExecutable)
+	var expected = 'a<div class=x>bHERE</div>'
+	var viewExecutable = compiler.compileHtml5(html, bindings)
+	//console.log(viewExecutable.getSource('name'))
+	var actual = viewExecutable(record)
+	test.equal(actual, expected)
 
 	test.done()
 }
 
+function testTag(test) {
+	var html = 'a<title>b</title>c'
+	var bindings = {
+		'title': {
+			'append': ''// test append all fields
+		}
+	}
+	var record = {
+		here: 'HERE',
+		there: 'THERE',
+	}
+	var expected = 'a<title>bhere:HERE, there:THERE</title>c'
+	var viewExecutable = compiler.compileHtml5(html, bindings)
+	var actual = viewExecutable(record)
+	test.equal(actual, expected)
+
+	test.done()
+}
+
+function testInclude(test) {
+
+	// the included view
+	var viewName = 'includeview'
+	var includeHtml = 'A<div>B</div>C'
+	var includeBindings = {
+		'div': 'there',
+	}
+
+	// the main view
+	var html = 'a<title>b</title>c'
+	var bindings = {
+		'title': {
+			'-view:includeview': includeBindings,
+		}
+	}
+
+	// the record
+	var record = {
+		here: 'HERE',
+		there: 'THERE'
+	}
+
+	var ri = compiler.renderInclude
+	compiler.renderInclude = mockInclude
+
+	var expected = 'a<title>A<div>THERE</div>C</title>c'
+	var viewExecutable = compiler.compileHtml5(html, bindings)
+	//console.log(viewExecutable.getSource('name'))
+	var actual = viewExecutable(record)
+	test.equal(actual, expected)
+
+	compiler.renderInclude = ri
+	test.done()	
+
+	function mockInclude(view, bindings) {
+		//console.log(arguments.callee.name, 'view&bindings', view, bindings)
+		test.equal(view, viewName)
+		test.deepEqual(bindings, includeBindings)
+		var renderFunction = compiler.compileHtml5(includeHtml, bindings)
+		test.ok(renderFunction instanceof Function)
+		//console.log(arguments.callee.name, 'source', renderFunction.getSource('name'))
+		//console.log(arguments.callee.name, 'result', renderFunction(record))
+		return renderFunction
+	}
+}
+
+function testError(test) {
+	var html = 'a<title>b'
+	var bindings = {
+		'title': 5, // we can't have number here
+	}
+	var record = {}
+	var expected = 'a<title>Unknown rendering data source type:numberb'
+	var viewExecutable = compiler.compileHtml5(html, bindings)
+	var actual = viewExecutable(record)
+	test.equal(actual, expected)
+
+	test.done()	
+}
