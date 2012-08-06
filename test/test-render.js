@@ -154,8 +154,8 @@ function testInclude(test) {
 		there: 'THERE'
 	}
 
-	var ri = compiler.renderInclude
-	compiler.renderInclude = mockInclude
+	var lf = compiler.loadFragment
+	compiler.loadFragment = mockInclude
 
 	var expected = 'a<title>A<div>THERE</div>C</title>c'
 	var viewExecutable = compiler.compileHtml5(html, bindings)
@@ -163,7 +163,7 @@ function testInclude(test) {
 	var actual = viewExecutable(record)
 	test.equal(actual, expected)
 
-	compiler.renderInclude = ri
+	compiler.loadFragment = lf
 	test.done()	
 
 	function mockInclude(fragment) {

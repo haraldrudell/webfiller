@@ -22,7 +22,7 @@ function testCompiler(test) {
 	var renderFunction = actual
 
 	// verify JavaScript source
-	var expectedSource = 'WF.views["abc"]={"dataLinks":[{"linkage":"data","tag":{"tag":"div","index":1,"voidElement":false,"attributes":{},"classes":[]}}],"pieces":["","<div>","",""]};'
+	var expectedSource = 'WF.fragments["abc"]={"dataLinks":[{"linkage":"data","tag":{"tag":"div","index":1,"voidElement":false,"attributes":{},"classes":[]}}],"pieces":["","<div>","",""]};'
 	var actualSource = actual.getSource('abc')
 	test.equal(actualSource, expectedSource)
 
