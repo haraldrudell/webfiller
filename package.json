@@ -1,8 +1,7 @@
 {
 	"name": "webfiller",
-	"description": "Package placeholder for a node.js module to be published August, 2012 by Harald Rudell",
+	"description": "Webfiller puts data and styling into Web pages on the server and in the browser, by Harald Rudell",
 	"author": "Harald Rudell <harald@allgoodapps.com> (http://www.haraldrudell.com)",
-	"keywords": ["template", "engine", "express", "html", "html5", "json", "client"],
 	"homepage": "https://github.com/haraldrudell/webfiller",
 	"bugs": "https://github.com/haraldrudell/webfiller/issues",
 	"version": "0.0.2",
