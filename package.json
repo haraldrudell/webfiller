@@ -5,7 +5,7 @@
 	"keywords": ["template", "engine", "express", "html", "html5", "json", "client"],
 	"homepage": "https://github.com/haraldrudell/webfiller",
 	"bugs": "https://github.com/haraldrudell/webfiller/issues",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"contributors": [
 		"Harald Rudell <harald@allgoodapps.com> (http://www.haraldrudell.com)"
 	],

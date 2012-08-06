@@ -17,8 +17,8 @@ And...
 ## Get It Now
 
 * [Webfiller](https://github.com/haraldrudell/webfiller) is on github
-* An [express 3 demo project](https://github.com/) TODO is available and live [here](https://github.com/) TODO
-* An [express 2 demo project](https://github.com/) TODO is available and live [here](https://github.com/) TODO
+* An [express 3 demo project](https://github.com/haraldrudell/express3webfiller) is available and live [here](http://e3.haraldrudell.com)
+* An [express 2 demo project](https://github.com/haraldrudell/express2webfiller) is available and live [here](http://e2.haraldrudell.com)
 
 # Concepts
 
