@@ -1,7 +1,7 @@
 // packagetest.js
 // test javascript and json syntax
 // (c) Harald Rudell 2012
-// 2012-08-02b
+// 2012-08-05: Better printouts, main not required
 
 // http://nodejs.org/docs/latest/api/fs.html
 var fs = require('fs')
@@ -21,7 +21,7 @@ module.exports = {
 
 // this script should be put one level down from the deployment folder
 var deployFolder = path.join(__dirname, '..')
-packageJsonKeys = ['name', 'description', 'author', 'version', 'contributors', 'repository', 'devDependencies', 'dependencies', 'repository', 'main', 'scripts']
+packageJsonKeys = ['name', 'description', 'author', 'version', 'contributors', 'repository', 'devDependencies', 'dependencies', 'repository', 'scripts']
 // these defaults can be overriden by a file ./test-package.json
 var defaults = {
 	// list of paths, relative to the deployFolder that will not be searched
@@ -59,7 +59,7 @@ function syntaxTest(test) {
 		if (--cbCounter == 0) {
 			// print file counts
 			var s = []
-			Object.keys(counts).forEach(function (countKey) {
+			Object.keys(fileTypeMap).forEach(function (countKey) {
 				s.push(countKey + ':' + counts[countKey])
 			})
 			console.log('Files checked for syntax:', s.join(', '), 'in', (((new Date) - t) / 1e3).toFixed(1),'s')
@@ -155,7 +155,9 @@ function verifyPackageJson(test) {
 	}
 	test.ok(!!object)
 	packageJsonKeys.forEach(function (key) {
-		test.ok(object[key] != undefined)
+		var exists = object[key] != undefined ?
+			key : false
+		test.equal(exists, key)
 	})
 
 	test.done()
@@ -174,7 +176,10 @@ function parseGitignore(test) {
 // ensure that readme.md exists
 function findReadme(test) {
 
-	test.ok(fs.existsSync(path.join(deployFolder, 'readme.md')))
+	var file = 'readme.md'
+	var exists = fs.existsSync(path.join(deployFolder, file)) ?
+		file : false
+	test.equal(exists, file)
 
 	test.done()
 }

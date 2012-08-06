@@ -3,7 +3,7 @@
 // (c) Harald Rudell 2012
 
 var compiler = require('../lib/compiler')
-var render = require('../lib/renderengine')
+var render = require('../lib/renderer')
 
 module.exports = {
 	testEmptyStringLocation: testEmptyStringLocation,
@@ -40,7 +40,7 @@ type: bindings data array
 type: other functions
 - html escaping: testReplace
 - raw escaping: TestInclude
-- error: 120802: no way to get an error...
+- error: testError
 */
 
 function testEmptyStringLocation(test) {
@@ -134,7 +134,7 @@ function testTag(test) {
 function testInclude(test) {
 
 	// the included view
-	var viewName = 'includeview'
+	var fragmentName = 'FRAGMENT'
 	var includeHtml = 'A<div>B</div>C'
 	var includeBindings = {
 		'div': 'there',
@@ -144,7 +144,7 @@ function testInclude(test) {
 	var html = 'a<title>b</title>c'
 	var bindings = {
 		'title': {
-			'-view:includeview': includeBindings,
+			'fragment': fragmentName,
 		}
 	}
 
@@ -166,11 +166,10 @@ function testInclude(test) {
 	compiler.renderInclude = ri
 	test.done()	
 
-	function mockInclude(view, bindings) {
+	function mockInclude(fragment) {
 		//console.log(arguments.callee.name, 'view&bindings', view, bindings)
-		test.equal(view, viewName)
-		test.deepEqual(bindings, includeBindings)
-		var renderFunction = compiler.compileHtml5(includeHtml, bindings)
+		test.equal(fragment, fragmentName)
+		var renderFunction = compiler.compileHtml5(includeHtml, includeBindings)
 		test.ok(renderFunction instanceof Function)
 		//console.log(arguments.callee.name, 'source', renderFunction.getSource('name'))
 		//console.log(arguments.callee.name, 'result', renderFunction(record))
