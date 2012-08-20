@@ -1,6 +1,5 @@
 // test-html5text.js
-// nodeunit test for html5text.js 
-// (c) Harald Rudell 2012
+// © Harald Rudell 2012
 
 var html5text = require('../lib/html5text')
 

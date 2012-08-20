@@ -1,16 +1,21 @@
 // packagetest.js
 // test javascript and json syntax
 // (c) Harald Rudell 2012
-// 2012-08-05: Better printouts, main not required
+// 2012-08-09: package.json must have keywords, using greatjson, no throw for syntax
 
+// https://github.com/haraldrudell/greatjson
+var greatjson = require('greatjson')
 // http://nodejs.org/docs/latest/api/fs.html
 var fs = require('fs')
 // http://nodejs.org/api/path.html
 var path = require('path')
 // https://github.com/mishoo/UglifyJS/
 var uglify = require('uglify-js')
+// http://nodejs.org/api/util.html
+var util = require('util')
 
-if (!fs.exists) fs.exists = path.exists
+// this function moved to a new module - make legacy node work
+if (!fs.existsSync) fs.existsSync = path.existsSync
 
 module.exports = {
 	syntaxTest: syntaxTest,
@@ -21,7 +26,8 @@ module.exports = {
 
 // this script should be put one level down from the deployment folder
 var deployFolder = path.join(__dirname, '..')
-packageJsonKeys = ['name', 'description', 'author', 'version', 'contributors', 'repository', 'devDependencies', 'dependencies', 'repository', 'scripts']
+packageJsonKeys = ['name', 'description', 'author', 'version', 'keywords', 'contributors', 'repository', 'devDependencies', 'dependencies', 'repository', 'scripts']
+
 // these defaults can be overriden by a file ./test-package.json
 var defaults = {
 	// list of paths, relative to the deployFolder that will not be searched
@@ -30,18 +36,21 @@ var defaults = {
 		'test',
 		'node_modules',
 	],
+
+	// extensions that maps to fileTypeMap
 	extensions: {
 		'js': 'javascript',
 		'json': 'json',
 	}
 }
 
+// maps filetypes to functions verifying syntax
 var fileTypeMap = {
 	'javascript': verifyJavaScriptSyntax,
 	'json': verifyJsonSyntax,
 }
 
-// verify syntax of all JavaScript
+// verify syntax of applicable files (JavaScript and json)
 function syntaxTest(test) {
 	var cbCounter = 0
 
@@ -96,7 +105,7 @@ function syntaxTest(test) {
 
 										// check syntax of json and JavaScript files
 										cbCounter++
-										parseFunc(absolutePath, relativePath, end)
+										parseFunc(absolutePath, relativePath, test, end)
 									}
 								}
 							}
@@ -109,7 +118,7 @@ function syntaxTest(test) {
 	}
 }
 
-function verifyJavaScriptSyntax(file, relPath, cb) {
+function verifyJavaScriptSyntax(file, relPath, test, cb) {
 	fs.readFile(file, 'utf-8', function (err, javascript) {
 		if (!err) {
 			var jsp = uglify.parser
@@ -117,28 +126,24 @@ function verifyJavaScriptSyntax(file, relPath, cb) {
 			try {
 				ast = jsp.parse(javascript)
 			} catch (e) {
-				console.log('File:', relPath ? relPath : file)
-				console.log('Syntax issue: %s at line:%s column:%s position:%s',
+				eMsg = util.format('%s at line:%d column:%d position:%d',
 					e.message,
 					e.line,
 					e.col,
-					e.pos)
-				throw e
+					e.pos)					
+				test.fail('File: ' + (relPath ? relPath : file) + ' has bad JavaScript:' + eMsg)
 			}
 		}
 		cb(err)
 	})
 }
 
-function verifyJsonSyntax(file, relPath, cb) {
+function verifyJsonSyntax(file, relPath, test, cb) {
 	fs.readFile(file, 'utf-8', function (err, jsonString) {
 		if (!err) {
-			var object
-			try {
-				object = JSON.parse(jsonString)
-			} catch (e) {
-				console.log('File:', relPath ? relPath : file)
-				err = e
+			var object = greatjson.parse(jsonString)
+			if (object instanceof Error) {
+				test.fail('File: ' + (relPath ? relPath : file) + ' has bad json:' + object.toString())
 			}
 		}
 		cb(err)
@@ -146,29 +151,45 @@ function verifyJsonSyntax(file, relPath, cb) {
 }
 
 function verifyPackageJson(test) {
-	var jsonString = fs.readFileSync(path.join(deployFolder, 'package.json'), 'utf-8')
-	var object
-	try {
-		object = JSON.parse(jsonString)
-	} catch (e) {
-		test.fail(e)
+
+	// file should exist
+	var name = 'package.json'
+	var file = path.join(deployFolder, name)
+	var exists = fs.existsSync(file)
+	test.ok(exists, 'File missing:' + name + ' in folder:' + deployFolder)
+	if (exists) {
+
+		// content should be json
+		var jsonString = fs.readFileSync(file, 'utf-8')
+		var object = greatjson.parse(jsonString)
+		if (object instanceof Error) test.fail('Bad json in file ' + name + ': ' + object.toString())
+		else {
+
+			// verify that content has all required keys
+			packageJsonKeys.forEach(function (key) {
+				test.ok(object[key] != undefined, 'Missing key: \'' + key + '\' in ' + name)
+			})
+		}
 	}
-	test.ok(!!object)
-	packageJsonKeys.forEach(function (key) {
-		var exists = object[key] != undefined ?
-			key : false
-		test.equal(exists, key)
-	})
 
 	test.done()
 }
 
 // ensure that .gitignore contains '/node_modules'
 function parseGitignore(test) {
-
 	var expected = '/node_modules'
-	var data = fs.readFileSync(path.join(deployFolder, '.gitignore'), 'utf-8')
-	test.ok(data.indexOf(expected) != -1, '.gitignore missing:' + expected)
+
+	// file should exist
+	var name = '.gitignore'
+	var file = path.join(deployFolder, name)
+	var exists = fs.existsSync(file)
+	test.ok(exists, 'File missing:' + name + ' in folder:' + deployFolder)
+
+	if (exists) {
+		var data = fs.readFileSync(file, 'utf-8')
+
+		test.ok(data.indexOf(expected) != -1, 'File ' + name + ' is missing line:\'' + expected + '\'')
+	}
 
 	test.done()
 }
@@ -176,10 +197,10 @@ function parseGitignore(test) {
 // ensure that readme.md exists
 function findReadme(test) {
 
-	var file = 'readme.md'
-	var exists = fs.existsSync(path.join(deployFolder, file)) ?
-		file : false
-	test.equal(exists, file)
+	var name = 'readme.md'
+	var file = path.join(deployFolder, name)
+	var exists = fs.existsSync(file)
+	test.ok(exists, 'File missing:' + name + ' in folder:' + deployFolder)
 
 	test.done()
 }

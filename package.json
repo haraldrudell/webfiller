@@ -2,6 +2,7 @@
 	"name": "webfiller",
 	"description": "Webfiller puts data and styling into Web pages on the server and in the browser, by Harald Rudell",
 	"author": "Harald Rudell <harald@allgoodapps.com> (http://www.haraldrudell.com)",
+	"keywords": ["template", "engine", "express", "html", "html5", "json", "client", "webfiller", "parser"],
 	"homepage": "https://github.com/haraldrudell/webfiller",
 	"bugs": "https://github.com/haraldrudell/webfiller/issues",
 	"version": "0.0.2",
@@ -13,7 +14,8 @@
 	},
 	"devDependencies": {
 		"nodeunit": "",
-		"uglify-js": ""
+		"uglify-js": "",
+		"greatjson": ""
 	},
 	"repository" : {
 		"type" : "git",
