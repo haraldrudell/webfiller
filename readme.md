@@ -102,6 +102,8 @@ TODO examples
 
 # Notes
 
-(c) [Harald Rudell](http://www.haraldrudell.com) wrote this for the love of node in August, 2012
+(c) [Harald Rudell](http://www.haraldrudell.com) wrote this for node in August, 2012
+
+No warranty expressed or implied. Use at your own risk.
 
 Please suggest better ways, new features, and possible difficulties on [github](https://github.com/haraldrudell/webfiller)
