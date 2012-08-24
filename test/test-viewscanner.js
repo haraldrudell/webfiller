@@ -16,17 +16,20 @@ exports['Scan:'] = {
 					path.join(viewFolder, 'index', 'index_2.js')],
 				handler: {},
 				fragmentFolder: path.join(viewFolder, 'index'),
+				domain: 'index',
 			},
 			'': {
 				css:[],
 				js:[],
 				handler: {},
 				fragmentFolder: path.join(viewFolder, 'fragments'),
+				domain: '',
 			},
 			home: {
 				css: [path.join(viewFolder, 'home', 'home.css')],
 				js: [],
 				fragmentFolder: path.join(viewFolder, 'home'),
+				domain: 'home',
 			},
 		}
 		var actual = viewscanner.scan({

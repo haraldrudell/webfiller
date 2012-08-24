@@ -29,22 +29,22 @@ Webfiller thinks of your html in terms of views:
 * **Fragments** are other html pieces that are rendered into a main view on the server or in the browser
 
 ## Bindings
-Webfiller injects data into web pages. Because there are no template language, the locations where to put data is declared as bindings. 
+Webfiller injects data into web pages. Since there is no template language, the locations where to put data is declared as bindings. 
 
-* **Binding key** is a tring that declares the view location
+* **Binding key** is a string defining where in the markup to inject data:
  * **'.class'** are all elements that have this class
  * **'#id'** is the element with this id attribute
- * **'tag'** all tag elements
+ * **'tag'** all elements with this tag, eg. 'title'
  * **''** the document location preceding the first tag
  * A **location** is an opening tag
  * A **tag** is not a comment, directive or unescaped text segment
- * An opening tag may be a void tag
+ * An opening tag may be a void tag, ie. '\<br/>'
 * **Binding value** declares what to insert at the location
 
- * 'string' a key in the options.data or options object provided to the view
- * Array facilitates is multiple values being applied
- * '-view:index' insert the output from rendering a fragment
- * object: A number of custom rendering functions applied
+ * 'string' a key in the **options object** provided to the view
+ * Array facilitates multiple values being applied
+ * 'fragment' insert the output from rendering a fragment
+ * object: A number of custom functions applied
 
 ## Compile to a View Executable
 
@@ -52,10 +52,10 @@ A view is compiled on server startup. Compiling takes the view and a bindings ob
 
 This is easy to use:
 
-* In the browser: **WF.render**('view', data) produces a string of html
-* on the server response.render('view', options) renders a view
+* In the browser: **WF.render**(data, 'view') produces a string of html
+* on the server response.render('view', options) renders a main view
 
-## Custom functions
+## Custom Functions
 
 Webfiller facilitates dual-side JavaScript that is executed both on the server and in the browser. Webfiller provides a small set of basic functions, and custom functions can add or override those functions. The benefit is that the same custom code is neatly organized and available both in the browser and on the server at no extra effort.
 
@@ -68,7 +68,7 @@ Webfiller uses two folders: the view folder and the webfiller folder. The webfil
 
 All code, markup and styling pertaining to a main view is enclosed in the main view and its sibling folder. This has a benefit that it makes it really easy to copy a view to another project.
 
-### Sibling folder
+### Domain folder
 
 * if there is a JavaScript file in the sibling folder, by the same name as the main view, then two exports is used from this file:
 
