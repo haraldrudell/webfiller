@@ -28,8 +28,6 @@ exports['Default Viewhandler:'] = {
 	},
 	'Default bindings': function () {
 		var actual = viewhandler.defaultBindings()
-		assert.deepEqual(actual, {h1: 'title', body: {
-			insert: '',
-		}})
+		assert.deepEqual(actual, {h1: 'title', body: '',})
 	},
 }

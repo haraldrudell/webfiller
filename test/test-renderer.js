@@ -2,7 +2,7 @@
 // © Harald Rudell 2012
 
 var compiler = require('../lib/compiler')
-var render = require('../lib/renderer')
+var renderer = require('../lib/renderer')
 var assert = require('mochawrapper')
 
 /*
@@ -163,13 +163,13 @@ exports['Render Runtime:'] = {
 		var html = 'a<title>b</title>c<div id=x>d'
 		var bindings = {
 			'#x': {
-				replace: 'here'
+				replace: ''
 			}
 		}
 		var record = {
 			here: 'HERE',
 		}
-		var expected = 'a<title>b</title>c<div id=x>HERE'
+		var expected = 'a<title>b</title>c<div id=x>here:HERE'
 		var viewExecutable = compiler.compileHtml5(html, bindings)
 		var actual = viewExecutable(record)
 		assert.equal(actual, expected)
@@ -177,14 +177,19 @@ exports['Render Runtime:'] = {
 	'Append': function () {
 		var html = 'a<div class=x>b</div>'
 		var bindings = {
-			'.x': { // find class x
-				'append': 'here' // append to tags its initial content
-			}
+			'.x': [ // find class x
+				{
+					'append': 'here', // append to tags its initial content
+				},
+				{
+					'append': '',
+				},
+			],
 		}
 		var record = {
 			here: 'HERE', // the value for field 'here' is 'HERE'
 		}
-		var expected = 'a<div class=x>bHERE</div>'
+		var expected = 'a<div class=x>bHEREhere:HERE</div>'
 		var viewExecutable = compiler.compileHtml5(html, bindings)
 		//console.log(viewExecutable.getSource('name'))
 		var actual = viewExecutable(record)
@@ -336,5 +341,66 @@ exports['Render Problems:'] = {
 		var viewExecutable = compiler.compileHtml5(html, bindings)
 		var actual = viewExecutable(record)
 		assert.equal(actual, expected)
+	},
+	'Unknown Fragment': function () {
+		var cbCounter
+		var html = ''
+		var fragmentName = 'FRAGMENT'
+		var domain = 'DOMAIN'
+		var bindings = {
+			'': {
+				fragment: fragmentName,
+			}
+		}
+
+		var viewloader = require('../lib/viewloader')
+		var _gf = viewloader.getFragment
+		viewloader.getFragment = mockGetFragment
+
+		var expected = 'Unknown fragment:' + fragmentName
+		var renderFunction = compiler.compileHtml5(html, bindings, domain)
+		cbCounter = 0
+		var actual = renderFunction({})
+		assert.equal(cbCounter, 1)
+		assert.equal(actual, expected)
+
+		var html = ''
+		var fragmentName = 'FRAGMENT.SPECIFIC'
+		var domain = 'DOMAIN'
+		var bindings = {
+			'': {
+				fragment: fragmentName,
+			}
+		}
+		var expected = 'Unknown fragment:' + fragmentName
+		var renderFunction = compiler.compileHtml5(html, bindings, domain)
+		cbCounter = 0
+		var actual = renderFunction({})
+		assert.equal(cbCounter, 1)
+		assert.equal(actual, expected)
+
+		viewloader.getFragment = _gf
+
+		function mockGetFragment(name, dom) {
+			cbCounter++
+			assert.equal(name, fragmentName)
+			assert.equal(dom, domain)
+			return 'Unknown fragment:' + name
+		}
+	}
+}
+
+exports['Frontend Rendering:'] = {
+	'Unknown view': function () {
+		var expected = 'Unknown fragment:FRAGMENT'
+		var actual = renderer.render({}, 'FRAGMENT')
+		assert.equal(actual, expected)
+
+		var expected = 'Unknown fragment:FRAGMENT.DOMAIN'
+		var actual = renderer.render({}, 'FRAGMENT.DOMAIN', 'domain')
+		assert.equal(actual, expected)
+	},
+	'Render': function () {
+		var actual = renderer.render({}, 'fragment', 'domain')
 	},
 }
