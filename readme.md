@@ -39,21 +39,42 @@ Webfiller injects data into web pages. Since there is no template language, the 
  * A **location** is an opening tag
  * A **tag** is not a comment, directive or unescaped text segment
  * An opening tag may be a void tag, ie. '\<br/>'
+
 * **Binding value** declares what to insert at the location
 
- * 'string' a key in the **options object** provided to the view
- * Array facilitates multiple values being applied
- * 'fragment' insert the output from rendering a fragment
+ * string 'datafield' a key in the data values provided in the **options object**
+ * Array facilitates the same value or custom function to be applied multiple times
  * object: A number of custom functions applied
+
+* Custom Functions
+Typically values are inserted befire existing tag content.
+
+ * fragment: 'fragmentname' insert the output from rendering a fragment, ie. a small piece of html
+ * append: binding value Appends rather then inserts content
+ * replace: binding value: replaces current element content
+ * addClass: 'class1 class2': adds the listed classes to the tag
+ * removeClass 'class1 class2': removes the listed classes from the tag
+ * attribute: { id: false, display:'none'}: removes the id attribute, and inserts the attribute display=none
+
+ Custom functions coded in JavaScript can be added that be used both on the server and in the browser.
 
 ## Compile to a View Executable
 
 A view is compiled on server startup. Compiling takes the view and a bindings object to produce a view executable. The **view executable** can render both on the server and in the browser.
 
-This is easy to use:
+### Server
 
-* In the browser: **WF.render**(data, 'view') produces a string of html
-* on the server response.render('view', options) renders a main view
+Views are rendered as usual. A bindings field provided at rendering may include additional fragments and custom functions.
+
+### Browser
+
+* In the browser: **WF.render**(data, fragment, domain) produces a string of rendered html
+
+ * data: a JavaScript object containing data fields
+ * fragment a fragment name such as 'list' or 'list.index'
+ * domain: optional domain for the fragment
+
+Fragments are associated with the view where they were declared. A view declaring fragments is known as a domain. When a fragment without a domain is included, the parent fragments's domain is first searched for the fragment name, then the first domain containing that fragment name is used. To render from an exact domain use 'list.index' to only search the index domain.
 
 ## Custom Functions
 
@@ -70,10 +91,13 @@ All code, markup and styling pertaining to a main view is enclosed in the main v
 
 ### Domain folder
 
-* if there is a JavaScript file in the sibling folder, by the same name as the main view, then two exports is used from this file:
+* if there is a JavaScript file in the sibling folder, by the same name as the main view, then three exports is used from this file:
 
- * getHandler export: a **handler function** that returns the handler function with arguments req, res, next
- * fragment export: which is a **fragment directory object** of all fragments that should be made available in the browser
+ * getHandler export: a **handler function** that Express uses to render the view
+ * fragments: A Javascript object with fragment names and their bindings.
+ * publicFragments: fragments that will be made available to the browser
+
+Javascript provided to the browser:
 
 * Any file ending with **_1.js** is browser JavaScript and will be made available in the webfiller folder
 * Any file ending with **_2.js** is dual-side JavaScript and will be made available in the webfiller folder
@@ -81,20 +105,20 @@ All code, markup and styling pertaining to a main view is enclosed in the main v
 
 ### Example File Collection
 
-* view - the root view folder
+In Express' root views folder:
 
- * index.html - a main view for the site's root url
- * index - a sibling folder
+* index.html - a main view for the site's root url '/'
+* index - a sibling folder
 
     * index_1.js front end JavaScript pertaining to the index view
     * index.js the server-side handler function for the index view
     * index.css styling for the index view
     * index_2.js dual side JavaScript for the index view
-    * list.html the view 'index/list'
-    * tree.html the view 'index/tree'
+    * list.html the fragment 'list.index'
+    * tree.html the fragment 'tree.index'
 
- * otherview.html - the view '/otherview'
- * otherview - a sibling folder
+* otherview.html - the view '/otherview'
+* otherview - a sibling folder containing fragment, code and styling for otherview
 
 # Reference
 
