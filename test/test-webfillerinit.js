@@ -3,6 +3,10 @@
 
 var webfillerinit = require('../lib/webfillerinit')
 var assert = require('mochawrapper')
+// http://nodejs.org/api/path.html
+var path = require('path')
+// http://nodejs.org/api/fs.html
+var fs = require('fs')
 
 var filewriter = require('../lib/filewriter')
 var fw
@@ -10,8 +14,11 @@ var fw
 var viewscanner = require('../lib/viewscanner')
 var sc
 
+outputFolder = path.join(__dirname, 'tmp')
+
 exports['Webfiller:'] = {
 	'before': function () {
+		if (!fs.existsSync(outputFolder)) fs.mkdirSync(outputFolder)
 		sc = viewscanner.scan
 		fw = filewriter.write
 	},
@@ -32,7 +39,7 @@ exports['Webfiller:'] = {
 		var opts = {
 			viewFolder: 'VF',
 			defExt: 'EXT',
-			webFillerFolder: path(__dirname, 'tmp'),
+			webFillerFolder: outputFolder,
 		}
 		var viewStructure = {
 			'index': {}, // url should be '', using derfault handler
@@ -42,7 +49,7 @@ exports['Webfiller:'] = {
 				},
 			},
 		}
-		var expectedFw = ["WFF",viewStructure,"index", 'EXT']
+		var expectedFw = [outputFolder, viewStructure,"index", 'EXT']
 		var expectedConfig = {
 			'': false,
 			'home': 'HANDLER',

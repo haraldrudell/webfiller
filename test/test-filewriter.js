@@ -44,12 +44,9 @@ var viewStructure = {
 var ext = 'html'
 var outputFolder = path.join(__dirname, 'tmp')
 
-function clearFolder() {
-		if (!fs.existsSync(outputFolder)) fs.mkdirSync(outputFolder)
-}
-
 exports['File Writer:'] = {
 	'before': function (done) { // make sure outputFolder has no files
+		if (!fs.existsSync(outputFolder)) fs.mkdirSync(outputFolder)
 		var cbCount = 1
 		var dirCount = 0
 		var unlinkCounter
