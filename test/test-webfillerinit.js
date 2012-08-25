@@ -42,8 +42,11 @@ exports['Webfiller:'] = {
 			webFillerFolder: outputFolder,
 		}
 		var viewStructure = {
-			'index': {}, // url should be '', using derfault handler
+			'index': {
+				js: [],
+			}, // url should be '', using derfault handler
 			'home': {
+				js: [],
 				handler: {
 					getHandler: mockGetHandler,
 				},
