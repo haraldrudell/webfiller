@@ -32,7 +32,7 @@ exports['Webfiller:'] = {
 		var opts = {
 			viewFolder: 'VF',
 			defExt: 'EXT',
-			webFillerFolder: 'WFF',
+			webFillerFolder: path(__dirname, 'tmp'),
 		}
 		var viewStructure = {
 			'index': {}, // url should be '', using derfault handler
