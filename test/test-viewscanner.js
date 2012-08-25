@@ -15,7 +15,13 @@ exports['Scan:'] = {
 				css:[path.join(testViews, 'index', 'index.css')],
 				js:[path.join(testViews, 'index', 'index_1.js'),
 					path.join(testViews, 'index', 'index_2.js')],
-				handler: {},
+				handler: {
+					publicFragments: {
+						frag: {
+							fragment: 'frag2',
+						},
+					},
+				},
 				fragmentFolder: path.join(testViews, 'index'),
 				domain: 'index',
 			},
@@ -42,29 +48,45 @@ exports['Scan:'] = {
 			dualSide: '_2.js',
 			fragments: path.join(testViews, 'fragments'),
 		})
+
 		// actual: viewStructure
-		assert.equal(typeof actual, 'object')
-		assert.deepEqual(Object.keys(actual).sort(), Object.keys(expected).sort())
-		// index
-		assert.equal(typeof actual.index, 'object')
-		assert.deepEqual(Object.keys(actual.index).sort(), Object.keys(expected.index).sort())
-		assert.ok(actual.index.handler)
-		assert.deepEqual(actual.index.css, expected.index.css)
-		assert.equal(actual.index.js.length, expected.index.js.length)
-		expected.index.js.forEach(function (absolute) {
-			assert.ok(~actual.index.js.indexOf(absolute))
-		})
-		assert.equal(actual.index.fragmentFolder, expected.index.fragmentFolder)
-		// home
-		assert.equal(typeof actual.home, 'object')
-		assert.deepEqual(Object.keys(actual.home).sort(), Object.keys(expected.home).sort())
-		assert.deepEqual(actual.home.css, expected.home.css)
-		assert.deepEqual(actual.home.js, expected.home.js)
-		assert.equal(actual.home.fragmentFolder, expected.home.fragmentFolder)
-		// fragments
-		assert.equal(typeof actual[''], 'object')
-		assert.deepEqual(Object.keys(actual['']).sort(), Object.keys(expected['']).sort())
-		assert.ok(actual[''].handler)
-		assert.equal(actual[''].fragmentFolder, expected[''].fragmentFolder)
+		// finds all domains
+		assert.equal(typeof actual, 'object', 'viewStructure not object')
+		assert.deepEqual(Object.keys(actual).sort(), Object.keys(expected).sort(), 'scanner has incorrect domain colleciton')
+		for (var domain in actual) {
+			checkDomain(actual[domain], expected[domain])
+		}
+
+		function checkDomain(actual, expected) {
+
+			// has all domain keys
+			if (verifyObject(actual, expected, 'Domain ' + domain)) {
+
+				// handler and fragment exports ok
+				if (verifyObject(actual.handler, expected.handler, 'Domain ' + domain + ' handler')) {
+					verifyObject(actual.handler.fragments, expected.handler.fragments, 'Domain ' + domain + ' fragments', true)
+					verifyObject(actual.handler.publicFragments, expected.handler.publicFragments, 'Domain ' + domain + ' publicFragments', true)
+				}
+
+				// file keys ok
+				verifyObject(actual.css, expected.css, 'Domain ' + domain + ' css file list')
+				verifyObject(actual.js, expected.js, 'Domain ' + domain + ' js file list')
+
+				// domain and folder
+				assert.equal(actual.domain, expected.domain, 'Domain ' + domain + ' has incorrect domain name')
+				assert.equal(actual.fragmentFolder, expected.fragmentFolder, 'Domain ' + domain + ' has incorrect fragment folder')
+			}
+		}
+
+		function verifyObject(actual, expected, heading, de) {
+			var result
+			if ((result = typeof actual == 'object') || de) {
+				assert.deepEqual(
+					de ? actual : Object.keys(actual).sort(),
+					de ? expected : Object.keys(expected).sort(),
+					heading + ' has incorrect properties')
+			} else assert.equal(actual, expected, heading + ' bad')
+			return result
+		}
 	},
 }
