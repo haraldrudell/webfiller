@@ -24,7 +24,7 @@ exports['Default Viewhandler:'] = {
 	},
 	'Default layout bindings': function () {
 		var actual = viewhandler.layoutBindings()
-		assert.deepEqual(actual, {title: 'title', body: 'body'})
+		assert.deepEqual(actual, {title: 'title', body: {raw: 'body'}})
 	},
 	'Default bindings': function () {
 		var actual = viewhandler.defaultBindings()
