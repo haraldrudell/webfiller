@@ -38,7 +38,7 @@ Webfiller injects data into web pages. Since there is no template language, the 
  * **''** the document location preceding the first tag
  * A **location** is an opening tag
  * A **tag** is not a comment, directive or unescaped text segment
- * An opening tag may be a void tag, ie. '\<br/>'
+ * An opening tag may be a void tag, ie. `<br/>`
 
 * **Binding value** declares what to insert at the location
 
