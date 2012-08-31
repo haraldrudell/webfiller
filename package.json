@@ -5,12 +5,12 @@
 	"keywords": ["template", "engine", "express", "html", "html5", "json", "client", "webfiller", "parser"],
 	"homepage": "https://github.com/haraldrudell/webfiller",
 	"bugs": "https://github.com/haraldrudell/webfiller/issues",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"contributors": [
 		"Harald Rudell <harald@allgoodapps.com> (http://www.haraldrudell.com)"
 	],
 	"dependencies": {
-		"tagfinder": ""
+		"tagfinder": ">= 0.1.1"
 	},
 	"devDependencies": {
 		"mochawrapper": ""
