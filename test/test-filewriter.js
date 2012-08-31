@@ -2,7 +2,7 @@
 // © Harald Rudell 2012
 
 var filewriter = require('../lib/filewriter')
-var viewloader = require('../lib/viewloader')
+var fragmentloader = require('../lib/fragmentloader')
 var assert = require('mochawrapper')
 // http://nodejs.org/api/fs.html
 var fs = require('fs')
@@ -91,7 +91,7 @@ exports['File Writer:'] = {
 				'// html5text.js\n',
 			],
 		}
-		viewloader.setParameters(viewStructure, 'html')
+		fragmentloader.setParameters(viewStructure, 'html')
 		filewriter.write(outputFolder, viewStructure, 'index', ext, checkResult)
 		function checkResult(err) {
 			if (err) assert.equal(err.toString(), undefined, err instanceof Error ? err.stack : 'x')
@@ -134,7 +134,7 @@ exports['File Writer:'] = {
 				'// html5text.js\n',
 			],
 		}
-		viewloader.setParameters(viewStructure, 'html')
+		fragmentloader.setParameters(viewStructure, 'html')
 		filewriter.write(outputFolder, viewStructure, undefined, ext, checkResult)
 		function checkResult(err) {
 			if (err) assert.equal(err.toString(), undefined, err instanceof Error ? err.stack : 'x')

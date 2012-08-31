@@ -2,7 +2,6 @@
 // © Harald Rudell 2012
 
 var viewloader = require('../lib/viewloader')
-var fragmentcache = require('../lib/fragmentcache')
 // http://nodejs.org/api/path.html
 var path = require('path')
 // https://github.com/haraldrudell/mochawrapper
@@ -26,55 +25,4 @@ exports['Main Views:'] = {
 			done()
 		})
 	}
-}
-
-exports['Fragments:'] = {
-	'Domain Specified': function () {
-		var viewStructure = {
-			index: {
-				domain: 'index',
-				fragmentFolder: path.join(testViews, 'index'),
-				handler: {
-					fragments: {
-						frag: {},
-						other: {
-							'-view': 'frag',
-						}
-					},
-				},
-			},
-		}
-		var expected = '<div>frag.index</div>'
-
-		viewloader.setParameters(viewStructure, 'html')
-		var renderFunction = viewloader.getFragment('frag.index', 'c', true)
-		assert.equal(typeof renderFunction, 'function')
-		var actual = renderFunction({})
-		assert.equal(actual, expected)
-	},
-	'Cache write': function () {
-		var viewStructure = {
-			index: {
-				domain: 'index',
-				fragmentFolder: path.join(testViews, 'index'),
-				handler: {
-					fragments: {
-						frag: {},
-						other: {
-							'-view': 'frag',
-						}
-					},
-				},
-			},
-		}
-		var expected = '<div>frag.index</div>'
-		var fragmentDirectory = fragmentcache.getCache()
-
-		viewloader.setParameters(viewStructure, 'html', fragmentDirectory)
-		var renderFunction = viewloader.getFragment('frag', 'c', true)
-		if (typeof renderFunction == 'string') assert.equal(renderFunction, '')
-		assert.equal(typeof renderFunction, 'function')
-		var actual = renderFunction({})
-		assert.equal(actual, expected, {})
-	},
 }

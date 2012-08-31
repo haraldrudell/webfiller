@@ -2,7 +2,17 @@
 	"name": "webfiller",
 	"description": "Webfiller puts data and styling into Web pages on the server and in the browser, by Harald Rudell",
 	"author": "Harald Rudell <harald@allgoodapps.com> (http://www.haraldrudell.com)",
-	"keywords": ["template", "engine", "express", "html", "html5", "json", "client", "webfiller", "parser"],
+	"keywords": [
+		"template",
+		"engine",
+		"express",
+		"html",
+		"html5",
+		"json",
+		"client",
+		"webfiller",
+		"parser"
+	],
 	"homepage": "https://github.com/haraldrudell/webfiller",
 	"bugs": "https://github.com/haraldrudell/webfiller/issues",
 	"version": "0.0.8",
@@ -15,13 +25,15 @@
 	"devDependencies": {
 		"mochawrapper": ""
 	},
-	"repository" : {
-		"type" : "git",
-		"url" : "https://haraldrudell@github.com/haraldrudell/webfiller.git"
+	"repository": {
+		"type": "git",
+		"url": "https://haraldrudell@github.com/haraldrudell/webfiller.git"
 	},
 	"main": "lib/webfiller",
 	"scripts": {
 		"test": "mocha --ui exports --reporter spec",
-		"monitor": "mocha --ui exports --reporter min --watch"
+		"monitor": "mocha --ui exports --reporter min --watch",
+		"debugtest": "mocha --debug-brk --ui exports --reporter spec",
+		"coverage": "mochacoverage"
 	}
 }

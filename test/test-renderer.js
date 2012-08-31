@@ -33,6 +33,9 @@ type: other functions
 - error: testError
 */
 
+var fragmentloader = require('../lib/fragmentloader')
+var _gf
+
 exports['Renderer:'] = {
 	'Plain html': function () {
 		var html = '<div/>'
@@ -111,51 +114,6 @@ exports['Binding Constructs:'] = {
 		var actual = viewExecutable(record)
 		assert.equal(actual, expected)
 	},
-	'Fragment include': function () {
-
-		// the included view
-		var fragmentName = 'FRAGMENT'
-		var domain = 'DOMAIN'
-		var includeHtml = 'A<div>B</div>C'
-		var includeBindings = {
-			'div': 'there',
-		}
-
-		// the main view
-		var html = 'a<title>b</title>c'
-		var bindings = {
-			'title': {
-				'fragment': fragmentName,
-			}
-		}
-		var expected = 'a<title>A<div>THEREB</div>Cb</title>c'
-
-		// the record
-		var record = {
-			here: 'HERE',
-			there: 'THERE'
-		}
-
-		var viewExecutable = compiler.compileHtml5(html, bindings, domain)
-
-		var viewloader = require('../lib/viewloader')
-		var _gf = viewloader.getFragment
-		viewloader.getFragment = mockGetFragment
-		var actual = viewExecutable(record)
-		viewloader.getFragment = _gf
-
-		assert.equal(actual, expected)
-
-		function mockGetFragment(name, dom) {
-			assert.equal(name, fragmentName)
-			assert.equal(dom, domain)
-			var renderFunction = compiler.compileHtml5(includeHtml, includeBindings)
-			assert.ok(renderFunction instanceof Function)
-			//console.log(arguments.callee.name, 'source', renderFunction.getSource('name'))
-			//console.log(arguments.callee.name, 'result', renderFunction(record))
-			return renderFunction
-		}
-	},
 }
 
 exports['Render Runtime:'] = {
@@ -209,40 +167,19 @@ exports['Render Runtime:'] = {
 		assert.equal(actual, expected)
 	},
 	'PrintRaw': function () {
-		// the fragment
-		var fragName = 'XYZ'
-		var includeHtml = '<&'
+		var html = 'a<div>b</div>c'
 		var bindings = {
 			div: {
-				fragment: fragName
-			}
+				raw: 'here',
+			},
 		}
-
-		// the main view
-		var domain = 'DOMAIN'
-		var html = 'a<div>b</div>c'
-		var expected = 'a<div><&b</div>c'
-
-		var record = {}
-
-		var viewExecutable = compiler.compileHtml5(html, bindings, domain)
-
-		var viewloader = require('../lib/viewloader')
-		var _gf = viewloader.getFragment
-		viewloader.getFragment = mockGetFragment
+		var record = {
+			here: '<&HERE', // the value for field 'here' is 'HERE'
+		}
+		var expected = 'a<div><&HEREb</div>c'
+		var viewExecutable = compiler.compileHtml5(html, bindings)
 		var actual = viewExecutable(record)
-		viewloader.getFragment = _gf
-
 		assert.equal(actual, expected)
-
-		function mockGetFragment(name, dom) {
-			assert.equal(name, fragName)
-			assert.equal(dom, domain)
-			var renderFunction = compiler.compileHtml5(includeHtml, bindings)
-			assert.ok(typeof renderFunction == 'function')
-			return renderFunction
-		}
-
 	},
 	'Add Class': function () {
 		var html = 'a<title class=1>b</title>'
@@ -342,8 +279,19 @@ exports['Render Problems:'] = {
 		var actual = viewExecutable(record)
 		assert.equal(actual, expected)
 	},
-	'Unknown Fragment': function () {
-		var cbCounter
+}
+
+exports['Fragment Rendering:'] = {
+	'before': function() {
+		_gf = fragmentloader.getFragment
+	},
+	'after': function () {
+		fragmentloader.getFragment = _gf
+	},
+	'Unknown any-domain fragment': function () {
+		var cbCounter = 0
+		var names = []
+		var doms = []
 		var html = ''
 		var fragmentName = 'FRAGMENT'
 		var domain = 'DOMAIN'
@@ -352,18 +300,30 @@ exports['Render Problems:'] = {
 				fragment: fragmentName,
 			}
 		}
-
-		var viewloader = require('../lib/viewloader')
-		var _gf = viewloader.getFragment
-		viewloader.getFragment = mockGetFragment
-
 		var expected = 'Unknown fragment:' + fragmentName
-		var renderFunction = compiler.compileHtml5(html, bindings, domain)
-		cbCounter = 0
-		var actual = renderFunction({})
-		assert.equal(cbCounter, 1)
-		assert.equal(actual, expected)
+		var expectedNames = [fragmentName]
+		var expectedDoms = [domain]
 
+		fragmentloader.getFragment = mockGetFragment
+
+		var renderFunction = compiler.compileHtml5(html, bindings, domain)
+		var actual = renderFunction({})
+		assert.equal(actual, expected)
+		assert.equal(cbCounter, 1)
+		assert.deepEqual(names, expectedNames)
+		assert.deepEqual(doms, expectedDoms)
+
+		function mockGetFragment(name, dom) {
+			cbCounter++
+			names.push(name)
+			doms.push(dom)
+			return 'Unknown fragment:' + name
+		}
+	},
+	'Unknown specific-domain fragment': function () {
+		var cbCounter = 0
+		var names = []
+		var doms = []
 		var html = ''
 		var fragmentName = 'FRAGMENT.SPECIFIC'
 		var domain = 'DOMAIN'
@@ -373,21 +333,67 @@ exports['Render Problems:'] = {
 			}
 		}
 		var expected = 'Unknown fragment:' + fragmentName
-		var renderFunction = compiler.compileHtml5(html, bindings, domain)
-		cbCounter = 0
-		var actual = renderFunction({})
-		assert.equal(cbCounter, 1)
-		assert.equal(actual, expected)
+		var expectedNames = [fragmentName]
+		var expectedDoms = [domain]
 
-		viewloader.getFragment = _gf
+		fragmentloader.getFragment = mockGetFragment
+
+		var renderFunction = compiler.compileHtml5(html, bindings, domain)
+		var actual = renderFunction({})
+		assert.equal(actual, expected)
+		assert.equal(cbCounter, 1)
+		assert.deepEqual(names, expectedNames)
+		assert.deepEqual(doms, expectedDoms)
 
 		function mockGetFragment(name, dom) {
 			cbCounter++
-			assert.equal(name, fragmentName)
-			assert.equal(dom, domain)
+			names.push(name)
+			doms.push(dom)
 			return 'Unknown fragment:' + name
 		}
-	}
+	},	
+	'Fragment include': function () {
+
+		// the included view
+		var fragmentName = 'FRAGMENT'
+		var domain = 'DOMAIN'
+		var includeHtml = 'A<div>B</div>C'
+		var includeBindings = {
+			'div': 'there',
+		}
+
+		// the main view
+		var html = 'a<title>b</title>c'
+		var bindings = {
+			'title': {
+				'fragment': fragmentName,
+			}
+		}
+		var expected = 'a<title>A<div>THEREB</div>Cb</title>c'
+
+		// the record
+		var record = {
+			here: 'HERE',
+			there: 'THERE'
+		}
+
+		var viewExecutable = compiler.compileHtml5(html, bindings, domain)
+
+		fragmentloader.getFragment = mockGetFragment
+		var actual = viewExecutable(record)
+
+		assert.equal(actual, expected)
+
+		function mockGetFragment(name, dom) {
+			assert.equal(name, fragmentName)
+			assert.equal(dom, domain)
+			var renderFunction = compiler.compileHtml5(includeHtml, includeBindings)
+			assert.ok(renderFunction instanceof Function)
+			//console.log(arguments.callee.name, 'source', renderFunction.getSource('name'))
+			//console.log(arguments.callee.name, 'result', renderFunction(record))
+			return renderFunction
+		}
+	},
 }
 
 exports['Frontend Rendering:'] = {
