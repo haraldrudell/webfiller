@@ -47,34 +47,39 @@ var outputFolder = path.join(__dirname, 'tmp')
 exports['File Writer:'] = {
 	'before': function (done) { // make sure outputFolder has no files
 		if (!fs.existsSync(outputFolder)) fs.mkdirSync(outputFolder)
-		var cbCount = 1
-		var dirCount = 0
-		var unlinkCounter
+		var unlinkCounter = 1
+		var doCheck
 		fs.readdir(outputFolder, dirList)
+
 		function dirList(err, list) {
 			if (!err) {
-				if (dirCount++ > 0) {
-					if(list.length) end(Error('Can not clear:' + outputFolder))
-					else end()
-				} else {
-					unlinkCounter = 1
+				if (doCheck = list.length) {
 					list.forEach(function (entry) {
 						unlinkCounter++
 						fs.unlink(path.join(outputFolder, entry), unlinkDone)
-					})
-					unlinkDone()
+					})					
+				}
+				unlinkDone()
+			} else end(err)
+		}
+
+		function unlinkDone(err) {
+			if (!err) {
+				if (--unlinkCounter == 0) {
+					if (doCheck) fs.readdir(outputFolder, verifyEmpty)
+					else end()
 				}
 			} else end(err)
 		}
-		function unlinkDone(err) {
-			if (!err) {
-				if (--unlinkCounter == 0) fs.readdir(outputFolder, dirList)
-			} else end(err)
+
+		function verifyEmpty(err, list) {
+			if (!err && list.length) err = Error('Can not clear:' + outputFolder)
+			end(err)
 		}
+
 		function end(err) {
-			if (!err) {
-				if (--cbCount == 0) done()
-			} else throw Error(err)
+			if (!err) done()
+			else throw err
 		}
 	},
 	'Single file pair': function(done) {

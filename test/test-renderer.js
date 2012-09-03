@@ -33,11 +33,12 @@ type: other functions
 - error: testError
 */
 
+// mocking of getFragment
 var fragmentloader = require('../lib/fragmentloader')
 var _gf
 
 exports['Renderer:'] = {
-	'Plain html': function () {
+	'Ability to render plain html': function () {
 		var html = '<div/>'
 		var expected = html
 		var actual = compiler.compileHtml5(html)()
@@ -45,25 +46,19 @@ exports['Renderer:'] = {
 	},
 }
 
-exports['Render at Markup Locations:'] = {
+exports['Renderer Ability to Insert Field at Markup Locations:'] = {
 	'Start of document': function () {
 		var html = '<!doctype html><title/>'
-		var bindings = {
-			'': 'title',
-		}
+		var bindings = {'': 'title'}
 		var record = {title:'HERE'}
 		var expected = 'HERE<!doctype html><title/>'
 		var viewExecutable = compiler.compileHtml5(html, bindings)
-	//console.log(viewExecutable.getSource('name'))
 		var actual = viewExecutable(record)
-	//console.log('actual:', actual)
 		assert.equal(actual, expected)
 	},
 	'By id attribute': function () {
 		var html = '<title id=x>y</title>'
-		var bindings = {
-			'#x': 'title',
-		}
+		var bindings = {'#x': 'title'}
 		var record = {title:'HERE'}
 		var expected = '<title id=x>HEREy</title>'
 		var viewExecutable = compiler.compileHtml5(html, bindings)
@@ -72,9 +67,7 @@ exports['Render at Markup Locations:'] = {
 	},
 	'By class name': function () {
 		var html = '<title class=x>y</title>'
-		var bindings = {
-			'.x': 'title',
-		}
+		var bindings = {'.x': 'title'}
 		var record = {title:'HERE'}
 		var expected = '<title class=x>HEREy</title>'
 		var viewExecutable = compiler.compileHtml5(html, bindings)
@@ -83,12 +76,8 @@ exports['Render at Markup Locations:'] = {
 	},
 	'By tag name': function () {
 		var html = 'a<title>b</title>c'
-		var bindings = {
-			title: 'title'
-		}
-		var record = {
-			title: 'HERE',
-		}
+		var bindings = {title: 'title'}
+		var record = {title: 'HERE'}
 		var expected = 'a<title>HEREb</title>c'
 		var viewExecutable = compiler.compileHtml5(html, bindings)
 		var actual = viewExecutable(record)
@@ -96,64 +85,135 @@ exports['Render at Markup Locations:'] = {
 	},
 }
 
-exports['Binding Constructs:'] = {
-	'Array': function () {
-		var html = 'a<title>b</title>c'
-		var bindings = {
-			title: [
-				'here',
-				'there'
-			]
-		}
-		var record = {
-			here: 'HERE',
-			there: 'THERE',
-		}
-		var expected = 'a<title>HERETHEREb</title>c'
+exports['Bindings String Field:'] = {
+	'First Field': function () {
+		var html = '<!doctype html><title/>'
+		var bindings = {'': 'a1'}
+		var record = {a1:'HERE', a2: 'THERE'}
+		var expected = 'HERE<!doctype html><title/>'
+		var viewExecutable = compiler.compileHtml5(html, bindings)
+		var actual = viewExecutable(record)
+		assert.equal(actual, expected)
+	},
+	'Second Field': function () {
+		var html = '<!doctype html><title/>'
+		var bindings = {'': 'a2'}
+		var record = {a1:'HERE', a2: 'THERE'}
+		var expected = 'THERE<!doctype html><title/>'
+		var viewExecutable = compiler.compileHtml5(html, bindings)
+		var actual = viewExecutable(record)
+		assert.equal(actual, expected)
+	},
+	'All Fields': function () {
+		var html = '<!doctype html><title/>'
+		var bindings = {'': ''}
+		var record = {a1:'HERE', a2: 'THERE'}
+		var expected = 'a1: HERE, a2: THERE<!doctype html><title/>'
 		var viewExecutable = compiler.compileHtml5(html, bindings)
 		var actual = viewExecutable(record)
 		assert.equal(actual, expected)
 	},
 }
 
-exports['Render Runtime:'] = {
-	'Replace': function () {
+exports['Binding Array Type:'] = {
+	'Empty Array': function () {
+		var html = 'a<title>b</title>c'
+		var bindings = {title: []}
+		var record = {
+			here: 'HERE',
+			there: 'THERE',
+		}
+		var expected = 'a<title>b</title>c'
+		var viewExecutable = compiler.compileHtml5(html, bindings)
+		var actual = viewExecutable(record)
+		assert.equal(actual, expected)
+	},
+	'Single String Constant': function () {
+		var html = 'a<title>b</title>c'
+		var bindings = {title: ['here']}
+		var record = {
+			here: 'HERE',
+			there: 'THERE',
+		}
+		var expected = 'a<title>hereb</title>c'
+		var viewExecutable = compiler.compileHtml5(html, bindings)
+		var actual = viewExecutable(record)
+		assert.equal(actual, expected)
+	},
+	'Multiple String Constants': function () {
+		var html = 'a<title>b</title>c'
+		var bindings = {title: ['here', 'there']}
+		var record = {
+			here: 'HERE',
+			there: 'THERE',
+		}
+		var expected = 'a<title>herethereb</title>c'
+		var viewExecutable = compiler.compileHtml5(html, bindings)
+		var actual = viewExecutable(record)
+		assert.equal(actual, expected)
+	},
+}
+
+exports['Render Custom Functions:'] = {
+	'NoContent': function () {
 		var html = 'a<title>b</title>c<div id=x>d'
 		var bindings = {
 			'#x': {
-				replace: ''
+				noContent: []
 			}
 		}
 		var record = {
 			here: 'HERE',
 		}
-		var expected = 'a<title>b</title>c<div id=x>here:HERE'
+		var expected = 'a<title>b</title>c<div id=x>'
 		var viewExecutable = compiler.compileHtml5(html, bindings)
 		var actual = viewExecutable(record)
 		assert.equal(actual, expected)
 	},
-	'Append': function () {
+	'NoContent with Bindings Content': function () {
+		var html = 'a<title>b</title>c<div id=x>d'
+		var bindings = {
+			'#x': {
+				noContent: 'here'
+			}
+		}
+		var record = {
+			here: 'HERE',
+		}
+		var expected = 'a<title>b</title>c<div id=x>HERE'
+		var viewExecutable = compiler.compileHtml5(html, bindings)
+		var actual = viewExecutable(record)
+		assert.equal(actual, expected)
+	},
+	'Single append': function () {
+		var html = 'a<div class=x>b</div>'
+		var bindings = {'.x': {'append': 'here'}}
+		var record = {
+			here: 'HERE', // the value for field 'here' is 'HERE'
+		}
+		var expected = 'a<div class=x>bHERE</div>'
+		var viewExecutable = compiler.compileHtml5(html, bindings)
+		var actual = viewExecutable(record)
+		assert.equal(actual, expected)
+	},
+	'Multiple append': function () {
 		var html = 'a<div class=x>b</div>'
 		var bindings = {
-			'.x': [ // find class x
-				{
-					'append': 'here', // append to tags its initial content
-				},
-				{
-					'append': '',
-				},
-			],
+			'.x': [{
+				'append': 'here', // append to tags its initial content
+			},{
+				'append': '',
+			}],
 		}
 		var record = {
 			here: 'HERE', // the value for field 'here' is 'HERE'
 		}
-		var expected = 'a<div class=x>bHEREhere:HERE</div>'
+		var expected = 'a<div class=x>bHEREhere: HERE</div>'
 		var viewExecutable = compiler.compileHtml5(html, bindings)
-		//console.log(viewExecutable.getSource('name'))
 		var actual = viewExecutable(record)
 		assert.equal(actual, expected)
 	},
-	'Print': function () {
+	'Escaping of Content': function () {
 		var html = 'a<div>b</div>c'
 		var bindings = {
 			div: 'here'
@@ -166,7 +226,7 @@ exports['Render Runtime:'] = {
 		var actual = viewExecutable(record)
 		assert.equal(actual, expected)
 	},
-	'PrintRaw': function () {
+	'Raw': function () {
 		var html = 'a<div>b</div>c'
 		var bindings = {
 			div: {
@@ -185,7 +245,7 @@ exports['Render Runtime:'] = {
 		var html = 'a<title class=1>b</title>'
 		var bindings = {
 			'title': {
-				addClass: 'red blue'
+				addClass: ['red blue']
 			}
 		}
 		var expected = 'a<title class="1 red blue">b</title>'
@@ -197,7 +257,7 @@ exports['Render Runtime:'] = {
 		var html = 'a<title class="1 red blue">b</title>'
 		var bindings = {
 			'title': {
-				removeClass: 'red white'
+				removeClass: ['red white']
 			}
 		}
 		var expected = 'a<title class="1 blue">b</title>'
@@ -211,7 +271,7 @@ exports['Render Runtime:'] = {
 			'title': {
 				attribute: {
 					'a1': false,
-					'a3': 'hello',
+					'a3': ['hello'],
 					'a6': false,
 				}
 			}
@@ -253,19 +313,6 @@ exports['Render Problems:'] = {
 		var actual = viewExecutable(record)
 		assert.equal(actual, expected)
 	},
-	'Fragment Name Not String': function () {
-		var html = 'a<title>b'
-		var bindings = {
-			'title': {
-				fragment: 5, // we can't have number here
-			}
-		}
-		var record = {}
-		var expected = 'a<title>Fragment name not stringb'
-		var viewExecutable = compiler.compileHtml5(html, bindings)
-		var actual = viewExecutable(record)
-		assert.equal(actual, expected)
-	},
 	'Unknown Function': function () {
 		var html = 'a<title>b'
 		var bindings = {
@@ -297,7 +344,7 @@ exports['Fragment Rendering:'] = {
 		var domain = 'DOMAIN'
 		var bindings = {
 			'': {
-				fragment: fragmentName,
+				fragment: [fragmentName],
 			}
 		}
 		var expected = 'Unknown fragment:' + fragmentName
@@ -317,6 +364,7 @@ exports['Fragment Rendering:'] = {
 			cbCounter++
 			names.push(name)
 			doms.push(dom)
+debugger
 			return 'Unknown fragment:' + name
 		}
 	},
@@ -329,7 +377,7 @@ exports['Fragment Rendering:'] = {
 		var domain = 'DOMAIN'
 		var bindings = {
 			'': {
-				fragment: fragmentName,
+				fragment: [fragmentName],
 			}
 		}
 		var expected = 'Unknown fragment:' + fragmentName
@@ -366,7 +414,7 @@ exports['Fragment Rendering:'] = {
 		var html = 'a<title>b</title>c'
 		var bindings = {
 			'title': {
-				'fragment': fragmentName,
+				'fragment': [fragmentName],
 			}
 		}
 		var expected = 'a<title>A<div>THEREB</div>Cb</title>c'

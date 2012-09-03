@@ -35,7 +35,7 @@ exports['Express 2'] = {
 			title: 'TITLE',
 			data: 'DATA',
 		}
-		var expected = '<h1>TITLE</h1><body>title:TITLE, data:DATA</body>'
+		var expected = '<h1>TITLE</h1><body>title: TITLE, data: DATA</body>'
 		var f = expressadapter.compile(html, options)
 		var actual = f(locals)
 		assert.equal(actual, expected)
