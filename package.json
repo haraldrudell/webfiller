@@ -15,12 +15,12 @@
 	],
 	"homepage": "https://github.com/haraldrudell/webfiller",
 	"bugs": "https://github.com/haraldrudell/webfiller/issues",
-	"version": "0.0.8",
+	"version": "0.1.0",
 	"contributors": [
 		"Harald Rudell <harald@allgoodapps.com> (http://www.haraldrudell.com)"
 	],
 	"dependencies": {
-		"tagfinder": ">= 0.1.1"
+		"tagfinder": ">= 0.1.2"
 	},
 	"devDependencies": {
 		"mochawrapper": ""

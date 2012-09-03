@@ -265,6 +265,18 @@ exports['Render Custom Functions:'] = {
 		var actual = viewExecutable()
 		assert.equal(actual, expected)
 	},
+	'Single Class': function () {
+		var html = 'a<title class="yellow red">b</title>'
+		var bindings = {
+			'title': {
+				removeClass: ['red']
+			}
+		}
+		var expected = 'a<title class=yellow>b</title>'
+		var viewExecutable = compiler.compileHtml5(html, bindings)
+		var actual = viewExecutable()
+		assert.equal(actual, expected)
+	},
 	'Attribute, add, remove, replace': function () {
 		var html = 'a<title a1=5 a2 = 3>b</title>'
 		var bindings = {
@@ -364,7 +376,6 @@ exports['Fragment Rendering:'] = {
 			cbCounter++
 			names.push(name)
 			doms.push(dom)
-debugger
 			return 'Unknown fragment:' + name
 		}
 	},
