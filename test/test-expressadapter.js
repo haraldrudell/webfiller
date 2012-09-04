@@ -7,10 +7,9 @@ var viewloader = require('../lib/viewloader')
 var fs = require('fs')
 var webfillerinit = require('../lib/webfillerinit')
 
-var fs
-var es
-var gm
-var iwf
+var es = fs.existsSync
+var gm = viewloader.getMainView
+var iwf = webfillerinit.initWebFiller
 
 exports['Express 2'] = {
 	'View with bindings': function () {
@@ -57,10 +56,6 @@ exports['Express 2'] = {
 }
 
 exports['Express 3:'] = {
-	'before': function before() {
-		gm = viewloader.getMainView
-		es = fs.existsSync
-	},
 	'after': function after() {
 		fs.existsSync = es
 		viewloader.getMainView = gm
@@ -152,9 +147,6 @@ exports['Express 3:'] = {
 }
 
 exports['Add routes:'] = {
-	'before': function before() {
-		iwf = webfillerinit.initWebFiller
-	},
 	'after': function after() {
 		webfillerinit.initWebFiller = iwf
 	},
@@ -175,7 +167,7 @@ exports['Add routes:'] = {
 		var handlers = []
 
 		webfillerinit.initWebFiller = mockInitWebFiller
-		expressadapter.addRoutes(null, app, checkResult)
+		expressadapter.addRoutes({}, app, checkResult)
 
 		function checkResult(err) {
 			if (err) assert.equal(err.toString(), undefined)
