@@ -99,7 +99,7 @@ All code, markup and styling pertaining to a main view is enclosed in the main v
 
 Javascript provided to the browser:
 
-* Any file ending with **_1.js** is browser JavaScript and will be made available in the webfiller folder
+* Any file in the **_1** subfolder is browser JavaScript and will be made available in the webfiller folder
 * Any file ending with **_2.js** is dual-side JavaScript and will be made available in the webfiller folder
 * Any file ending with **.css** is styling and will be made available in the webfiller folder
 
@@ -110,12 +110,12 @@ In Express' root views folder:
 * index.html - a main view for the site's root url '/'
 * index - a sibling folder
 
-    * index_1.js front end JavaScript pertaining to the index view
     * index.js the server-side handler function for the index view
     * index.css styling for the index view
     * index_2.js dual side JavaScript for the index view
     * list.html the fragment 'list.index'
     * tree.html the fragment 'tree.index'
+    * _1 subfolder: contains front-end files (indexfrontend.js) JavaScript pertaining to the index view
 
 * otherview.html - the view '/otherview'
 * otherview - a sibling folder containing fragment, code and styling for otherview
