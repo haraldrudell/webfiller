@@ -2,6 +2,7 @@
 // © Harald Rudell 2012
 
 var webfillerinit = require('../lib/webfillerinit')
+// https://github.com/haraldrudell/mochawrapper
 var assert = require('mochawrapper')
 // http://nodejs.org/api/path.html
 var path = require('path')
@@ -32,7 +33,7 @@ exports['Webfiller:'] = {
 			viewExt: 'EXT',
 			cssExt: 'css',
 			handlerExt: 'js',
-			frontEnd: '_1.js',
+			frontEnd: '_1',
 			dualSide: '_2.js',
 			fragments: 'VF/fragments',
 		}]

@@ -13,7 +13,7 @@ exports['Scan:'] = {
 		var expected = {
 			index: {
 				css:[path.join(testViews, 'index', 'index.css')],
-				js:[path.join(testViews, 'index', 'index_1.js'),
+				js:[path.join(testViews, 'index', 'indexfrontend.js'),
 					path.join(testViews, 'index', 'index_2.js')],
 				handler: {
 					publicFragments: {
@@ -39,27 +39,26 @@ exports['Scan:'] = {
 				domain: 'home',
 			},
 		}
+
 		var actual = viewscanner.scan({
 			folder: testViews,
 			viewExt: 'html',
 			cssExt: 'css',
 			handlerExt: 'js',
-			frontEnd: '_1.js',
+			frontEnd: '_1',
 			dualSide: '_2.js',
 			fragments: path.join(testViews, 'fragments'),
 		})
-
-		// actual: viewStructure
-		// finds all domains
 		assert.equal(typeof actual, 'object', 'viewStructure not object')
-		assert.deepEqual(Object.keys(actual).sort(), Object.keys(expected).sort(), 'scanner has incorrect domain colleciton')
+		assert.deepEqual(Object.keys(actual).sort(), Object.keys(expected).sort(), 'scanner has incorrect domain collection')
+		// check each domain: index, '', home
 		for (var domain in actual) {
 			checkDomain(actual[domain], expected[domain])
 		}
 
 		function checkDomain(actual, expected) {
 
-			// has all domain keys
+			// verify that this domain has all the expected property keys
 			if (verifyObject(actual, expected, 'Domain ' + domain)) {
 
 				// handler and fragment exports ok
@@ -78,6 +77,12 @@ exports['Scan:'] = {
 			}
 		}
 
+		/*
+		Verify a domain
+		actual, expected
+		heading: what field is being tested
+		de: optional boolean: do a deep equal rather than only verify object keys
+		*/
 		function verifyObject(actual, expected, heading, de) {
 			var result
 			if ((result = typeof actual == 'object') || de) {

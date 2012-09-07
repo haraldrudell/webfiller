@@ -3,18 +3,21 @@
 
 var filewriter = require('../lib/filewriter')
 var fragmentloader = require('../lib/fragmentloader')
+// https://github.com/haraldrudell/mochawrapper
 var assert = require('mochawrapper')
 // http://nodejs.org/api/fs.html
 var fs = require('fs')
 // http://nodejs.org/api/path.html
 var path = require('path')
 
+if (!fs.existsSync) fs.existsSync = path.existsSync
+
 var testViews = path.join(__dirname, 'testviews')
 
 var viewStructure = {
 	index: {
 		css:[path.join(testViews, 'index', 'index.css')],
-		js:[path.join(testViews, 'index', 'index_1.js'),
+		js:[path.join(testViews, 'index', '_1', 'indexfrontend.js'),
 			path.join(testViews, 'index', 'index_2.js')],
 		handler: {
 			publicFragments: {
@@ -46,13 +49,20 @@ var outputFolder = path.join(__dirname, 'tmp')
 
 exports['File Writer:'] = {
 	'before': function (done) { // make sure outputFolder has no files
-		if (!fs.existsSync(outputFolder)) fs.mkdirSync(outputFolder)
-		var unlinkCounter = 1
+		var unlinkCounter
 		var doCheck
-		fs.readdir(outputFolder, dirList)
+
+		fs.exists(outputFolder, existsResult)
+
+		function existsResult(exists) {
+			if (exists) { // the folder exists, make sure it's empty
+				fs.readdir(outputFolder, dirList)
+			} else fs.mkdir(outputFolder, end)
+		}
 
 		function dirList(err, list) {
 			if (!err) {
+				unlinkCounter = 1
 				if (doCheck = list.length) {
 					list.forEach(function (entry) {
 						unlinkCounter++
@@ -65,7 +75,7 @@ exports['File Writer:'] = {
 
 		function unlinkDone(err) {
 			if (!err) {
-				if (--unlinkCounter == 0) {
+				if (!--unlinkCounter) {
 					if (doCheck) fs.readdir(outputFolder, verifyEmpty)
 					else end()
 				}
@@ -73,7 +83,7 @@ exports['File Writer:'] = {
 		}
 
 		function verifyEmpty(err, list) {
-			if (!err && list.length) err = Error('Can not clear:' + outputFolder)
+			if (!err && list.length) err = Error('Could not empty folder: \'' + outputFolder + '\'')
 			end(err)
 		}
 

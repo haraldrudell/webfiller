@@ -2,10 +2,14 @@
 // © Harald Rudell 2012
 
 var expressadapter = require('../lib/expressadapter')
-var assert = require('mochawrapper')
-var viewloader = require('../lib/viewloader')
-var fs = require('fs')
 var webfillerinit = require('../lib/webfillerinit')
+var viewloader = require('../lib/viewloader')
+// https://github.com/haraldrudell/mochawrapper
+var assert = require('mochawrapper')
+// http://nodejs.org/api/path.html
+var path = require('path')
+// http://nodejs.org/api/fs.html
+var fs = require('fs')
 
 var es = fs.existsSync
 var gm = viewloader.getMainView
@@ -153,9 +157,10 @@ exports['Add routes:'] = {
 	'Test': function (done) {
 		var app = {
 			settings: {
-				views: 'x',
+				views: path.join(__dirname, 'testviews', 'home'),
 			},
 			get: mockGet,
+			handler: true,
 		}
 		var routes = [
 			{
