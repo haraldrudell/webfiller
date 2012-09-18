@@ -160,7 +160,7 @@ exports['Add routes:'] = {
 				views: path.join(__dirname, 'testviews', 'home'),
 			},
 			get: mockGet,
-			handler: true,
+			handle: true,
 		}
 		var routes = [
 			{
